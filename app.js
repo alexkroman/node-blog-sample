@@ -6,6 +6,7 @@
 var express = require('express')
   , routes = require('./routes');
 
+var ArticleProvider = require('./articleprovider-memory').ArticleProvider;
 var app = module.exports = express.createServer();
 
 // Configuration
@@ -30,7 +31,33 @@ app.configure('production', function(){
 
 // Routes
 
-app.get('/', routes.index);
+var articleProvider= new ArticleProvider();
+
+app.get('/', function(req, res){
+    articleProvider.findAll( function(error,docs){
+        res.render('index.jade', { locals: {
+            title: 'Blog',
+            articles:docs
+            }
+        });
+    })
+});
+
+app.get('/blog/new', function(req, res) {
+    res.render('blog_new.jade', { locals: {
+        title: 'New Post'
+    }
+    });
+});
+
+app.post('/blog/new', function(req, res){
+    articleProvider.save({
+        title: req.param('title'),
+        body: req.param('body')
+    }, function( error, docs) {
+        res.redirect('/')
+    });
+});
 
 app.listen(3000, function(){
   console.log("Express server listening on port %d in %s mode", app.address().port, app.settings.env);
