@@ -6,7 +6,21 @@
 var express = require('express')
   , routes = require('./routes');
 
-var ArticleProvider = require('./articleprovider-memory').ArticleProvider;
+var mongoose = require('mongoose');
+mongoose.connect('mongodb://localhost/blog');
+
+var Schema = mongoose.Schema
+  , ObjectId = Schema.ObjectId;
+
+var BlogPost = new Schema({
+    author    : ObjectId
+  , title     : String
+  , body      : String
+});
+
+mongoose.model('Blog', BlogPost)
+var Blog = mongoose.model('Blog')
+
 var app = module.exports = express.createServer();
 
 // Configuration
@@ -31,10 +45,9 @@ app.configure('production', function(){
 
 // Routes
 
-var articleProvider= new ArticleProvider();
 
 app.get('/', function(req, res){
-    articleProvider.findAll( function(error,docs){
+    Blog.find( function(error,docs){
         res.render('index.jade', { locals: {
             title: 'Blog',
             articles:docs
@@ -51,12 +64,12 @@ app.get('/blog/new', function(req, res) {
 });
 
 app.post('/blog/new', function(req, res){
-    articleProvider.save({
-        title: req.param('title'),
+	new Blog({
+		title: req.param('title'),
         body: req.param('body')
-    }, function( error, docs) {
-        res.redirect('/')
-    });
+	}).save( function(error, data) {
+		res.redirect('/')	
+	});
 });
 
 app.listen(3000, function(){
