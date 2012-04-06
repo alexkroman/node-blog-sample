@@ -45,7 +45,6 @@ app.configure('production', function(){
 
 // Routes
 
-
 app.get('/', function(req, res){
     Blog.find( function(error,docs){
         res.render('index.jade', { locals: {
@@ -61,6 +60,17 @@ app.get('/blog/new', function(req, res) {
         title: 'New Post'
     }
     });
+});
+
+app.get('/blog/:id', function(req, res) {
+	Blog.findById(req.params.id, function(error, article) {
+	        res.render('blog_show.jade',
+	        { locals: {
+	            title: article.title,
+	            article:article
+	        }
+	        });
+		});
 });
 
 app.post('/blog/new', function(req, res){
